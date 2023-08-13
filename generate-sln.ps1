@@ -1,5 +1,5 @@
 Remove-Item $PSScriptRoot/build -Recurse -Force -ErrorAction:SilentlyContinue -Confirm:$False | Out-Null
-Push-Location
+Push-Location $PSScriptRoot
 try {
     & git submodule init
     & git submodule update
