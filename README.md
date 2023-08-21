@@ -5,6 +5,8 @@
 
 - [CMake](https://cmake.org/)
   - Add this to your `PATH`
+- [DKUtil](https://github.com/gottyduke/DKUtil)
+  - Init & update with git submodule
 - [PowerShell](https://github.com/PowerShell/PowerShell/releases/latest)
 - [Vcpkg](https://github.com/microsoft/vcpkg)
   - Add the environment variable `VCPKG_ROOT` with the value as the path to the folder containing vcpkg
@@ -25,7 +27,7 @@
 git clone https://github.com/gottyduke/BG3_PluginTemplate.git
 cd BG3_PluginTemplate
 git submodule init
-git submodule update
+git submodule update --remote
 .\build-release.ps1
 ```
 
@@ -49,6 +51,8 @@ git submodule update
 
 - [CMake](https://cmake.org/)
   - 把这个添加到你的`PATH`
+- [DKUtil](https://github.com/gottyduke/DKUtil)
+  - 通过git子模块初始化并更新
 - [PowerShell](https://github.com/PowerShell/PowerShell/releases/latest)
 - [Vcpkg](https://github.com/microsoft/vcpkg)
   - 用`VCPKG_ROOT`设置环境变量，并把包含vcpkg的文件夹路径作为值
@@ -69,7 +73,7 @@ git submodule update
 git clone https://github.com/gottyduke/BG3_PluginTemplate.git
 cd BG3_PluginTemplate
 git submodule init
-git submodule update
+git submodule update --remote
 .\build-release.ps1
 ```
 

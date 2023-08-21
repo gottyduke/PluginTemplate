@@ -2,18 +2,18 @@
 
 # args
 param (
-    [Parameter(Mandatory)][ValidateSet('SOURCEGEN', 'DISTRIBUTE')][string]$Mode,
+    [Parameter(Mandatory)][ValidateSet('SOURCEGEN', 'DISTRIBUTE')][string]$Mode = 'SOURCEGEN',
     [string]$Version,
     [string]$Path,
-    [string]$Project
+    [string]$Binary
 )
 
 
 $ErrorActionPreference = "Stop"
 
 $Folder = $PSScriptRoot | Split-Path -Leaf
-$SourceExt = @('.c', '.cc', '.cpp', '.cxx', '.h', '.hpp', '.hxx', '.inl', 'inc', '.ixx')
-$ConfigExt = @('.ini', '.json', '.toml')
+$SourceExt = @('.asm', '.c', '.cc', '.cpp', '.cxx', '.h', '.hpp', '.hxx', 'inc', '.inl', '.ixx')
+$ConfigExt = @('.ini', '.json', '.toml', '.xml')
 $DocsExt = @('.md')
 $env:ScriptCulture = (Get-Culture).Name -eq 'zh-CN'
 
@@ -101,9 +101,10 @@ if ($Mode -eq 'SOURCEGEN') {
 # @@DISTRIBUTE
 if ($Mode -eq 'DISTRIBUTE') {
     # update script to every project
-    Get-ChildItem "$PSScriptRoot/*/*" -Directory | Where-Object {
+    Get-ChildItem "$PSScriptRoot/$Path" -Directory -Recurse | Where-Object {
         $_.Name -notin @('vcpkg', 'Build', '.git', '.vs') -and
-        (Test-Path "$_/CMakeLists.txt" -PathType Leaf)
+        (Test-Path "$_/CMakeLists.txt" -PathType Leaf) -and
+        (Test-Path "$_/vcpkg.json" -PathType Leaf)
     } | ForEach-Object {
         Write-Host "`tUpdated <$_>"
         Robocopy.exe "$PSScriptRoot" "$_" '!Update.ps1' /MT /NJS /NFL /NDL /NJH | Out-Null
