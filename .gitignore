@@ -1,3 +1,6 @@
-Build/
+[Bb]uild/
 .vs/
+.vscode/
 *.zip
+*.timestamp
+dist/deploy.ps1

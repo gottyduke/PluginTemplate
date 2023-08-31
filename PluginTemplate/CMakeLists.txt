@@ -8,11 +8,9 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG OFF)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE FILEPATH "")
 
-include(GNUInstallDirs)
-
 # info
 project(
-	BG3PluginTemplate
+	PluginTemplate
 	VERSION 1.0.0
 	LANGUAGES CXX
 )
@@ -36,7 +34,7 @@ configure_file(
 )
 
 # source files
-execute_process(COMMAND powershell -ExecutionPolicy Bypass -File "${CMAKE_CURRENT_SOURCE_DIR}/!Update.ps1" "SOURCEGEN" "${PROJECT_VERSION}" "${CMAKE_CURRENT_BINARY_DIR}")
+execute_process(COMMAND powershell -ExecutionPolicy Bypass -File "${CMAKE_CURRENT_SOURCE_DIR}/!update.ps1" "SOURCEGEN" "${PROJECT_VERSION}" "${CMAKE_CURRENT_BINARY_DIR}")
 include(${CMAKE_CURRENT_BINARY_DIR}/sourcelist.cmake)
 source_group(
 	TREE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -158,14 +156,14 @@ set_property(
 	TARGET 
 	${PROJECT_NAME}
 	PROPERTY VS_USER_PROPS 
-	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/build_stl_modules.props")
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/build_stl_modules.props"
+)
 
-# post build event
+# update deployments
 add_custom_command(
 	TARGET 
 	${PROJECT_NAME} 
 	POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy
-		${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.dll
-		"$ENV{BG3PATH}/bin/NativeMods/"
+	COMMAND powershell -NoProfile -ExecutionPolicy Bypass -File 
+		"${CMAKE_CURRENT_SOURCE_DIR}/!update.ps1" "DISTRIBUTE" "${PROJECT_VERSION}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$(ConfigurationName)" "${PROJECT_NAME}" 
 )
