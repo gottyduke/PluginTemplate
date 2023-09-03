@@ -31,7 +31,7 @@ function Normalize-Path {
 function Resolve-Files {
     param (
         [Parameter(ValueFromPipeline)][string]$parent = $PSScriptRoot,
-        [string[]]$range = @('include', 'src', 'test', 'dist')
+        [string[]]$range = @('include', 'src', 'test')
     )
     
     process {
@@ -55,7 +55,7 @@ function Resolve-Files {
                 }
             }               
             
-            Get-ChildItem "$parent" -File -ErrorAction SilentlyContinue | Where-Object {
+            Get-ChildItem "$parent/dist" -Exclude "rules" | Get-ChildItem -File -Recurse -ErrorAction SilentlyContinue | Where-Object {
                 ($_.Extension -in ($ConfigExt + $DocsExt)) -and 
                 ($_.Name -notmatch 'cmake|vcpkg')
             } | Resolve-Path -Relative | ForEach-Object {
@@ -92,6 +92,7 @@ if ($Mode.ToUpper() -eq 'SOURCEGEN') {
 }
 
 $RuleVarTbl = @{ 
+    config          = 'debug';
     cmake_output    = Normalize-Path ($Path + '/');
     dist            = Normalize-Path "$PSScriptRoot/dist/";
     project_name    = $Payload;
@@ -197,6 +198,9 @@ if ($Mode.ToUpper() -eq 'DISTRIBUTE') {
         exit
     }
 
+    $Path = Normalize-Path $Path
+    $RuleVarTbl.config = $Path.Split('/')[-1].ToLower()
+
     $rules = Get-ChildItem "$($RuleVarTbl.dist)/rules" -File *.json
     $rule_timestamp = @( "!update : $((Get-Item $MyInvocation.MyCommand.Path).LastWriteTime.Ticks)" )
 
@@ -233,13 +237,18 @@ if ($Mode.ToUpper() -eq 'DISTRIBUTE') {
             $deployer = [IO.File]::ReadAllText($rule.FullName) | ConvertFrom-Json
 
             foreach ($deployee in $deployer) {
-                Resolve-Rules $deployee
+                if (("config" -in $deployee.PSObject.Properties.Name) -and ($deployee.config -ne $RuleVarTbl.config)) {
+                    continue
+                }
+                else {
+                    Resolve-Rules $deployee
+                }
             }
         }
 
-        $RuleCmds | Out-File "$($RuleVarTbl.dist)/deploy.ps1" utf8
+        $RuleCmds | Out-File "$($RuleVarTbl.dist)/deploy-$($RuleVarTbl.config.ToLower()).ps1" utf8
 
-        $rule_timestamp[-1] = "deployer : $((Get-Item "$($RuleVarTbl.dist)/deploy.ps1").LastWriteTime.Ticks)"
+        $rule_timestamp[-1] = "deployer : $((Get-Item "$($RuleVarTbl.dist)/deploy-$($RuleVarTbl.config.ToLower()).ps1").LastWriteTime.Ticks)"
         Remove-Item "$($RuleVarTbl.dist)/rules/*.timestamp" -Force -ErrorAction:SilentlyContinue | Out-Null
         $rule_timestamp | Out-File $timestamp utf8
 
@@ -248,7 +257,7 @@ if ($Mode.ToUpper() -eq 'DISTRIBUTE') {
     
     # deploy
     Write-Host "`tExecuting deploy rules..."
-    & "$($RuleVarTbl.dist)/deploy.ps1"
+    & "$($RuleVarTbl.dist)/deploy-$($RuleVarTbl.config.ToLower()).ps1"
 
     Write-Host "`t...Ok"
 }
