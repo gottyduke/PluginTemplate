@@ -2,14 +2,13 @@ cmake_minimum_required(VERSION 3.21)
 
 # info
 project(
-	PluginTemplate
+	Plugin
 	VERSION 1.0.0
 	LANGUAGES CXX
 )
 
 # boiler
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/common.cmake)
-
 
 # in-place configuration
 configure_file(
@@ -82,6 +81,7 @@ if (MSVC)
 			/W0
 			/WX
 			/permissive-
+			/utf-8
 			/Zc:alignedNew
 			/Zc:auto
 			/Zc:__cplusplus
@@ -126,5 +126,5 @@ add_custom_command(
 	${PROJECT_NAME} 
 	POST_BUILD
 	COMMAND powershell -NoProfile -ExecutionPolicy Bypass -File 
-		"${CMAKE_CURRENT_SOURCE_DIR}/!update.ps1" "DISTRIBUTE" "${PROJECT_VERSION}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$(ConfigurationName)" "${PROJECT_NAME}" 
+		"${CMAKE_CURRENT_SOURCE_DIR}/!update.ps1" "DISTRIBUTE" "${PROJECT_VERSION}" "${CMAKE_CURRENT_BINARY_DIR}/$(ConfigurationName)" "${PROJECT_NAME}" 
 )

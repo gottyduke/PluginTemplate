@@ -37,3 +37,8 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG OFF)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE FILEPATH "")
 
+
+# out-of-source builds only
+if(${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR})
+	message(FATAL_ERROR "In-source builds are not allowed.")
+endif()
